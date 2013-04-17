@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<pluggable type="plugin">
+  <name>Featured Image</name>
+  <version>0.9-1.0</version>
+  <url>http://habariproject.org</url>
+  <author url="http://habariproject.org">The Habari Community</author>
+  <license url="http://www.apache.org/licenses/LICENSE-2.0.html">Apache Software License 2.0</license>
+  <description><![CDATA[Adds a featured image and summary field to the publish form.]]></description>
+  <copyright>2013</copyright>
+
+  <help>
+    <value><![CDATA[
+    	<p>Adds a featured image and summary field to the publish form.</p>
+      <p>The following will be made available to your theme:</p>
+      <ul>
+      	<li>$post->featuredimage</li>
+      	<li>$post->featuredimage__width (you don't need height for responsive layouts)</li>
+      	<li>$post->summary</li>
+      </ul>
+]]></value>
+  </help>
+  <guid>B7D4D3CA-A492-11E2-913A-63506188709B</guid>
+</pluggable>
