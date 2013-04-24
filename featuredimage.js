@@ -9,7 +9,7 @@
     if (container) {
       input = container.getElementsByTagName('input')[0];
     } else {
-      input = document.getElementById('featuredimage');
+      input = document.getElementById('featuredimage_image');
     }
 
     if (input) {
@@ -22,14 +22,14 @@
   });
 
   function refreshImage() {
-    var img = document.getElementById('featured-img');
+    var img = document.getElementById('featuredimage_img');
 
     if (img) {
       img.parentNode.removeChild(img);
     }
 
     img = new Image();
-    img.id = 'featured-img';
+    img.id = 'featuredimage_img';
     img.src = input.value;
     img.style.display = img.width && img.height ? '' : 'none';
     input.parentNode.appendChild(img);

@@ -1,7 +1,4 @@
 <?php
-error_reporting( E_ALL | E_STRICT );
-?>
-<?php
 
 /**
 * Featured Image - A plugin to display a featured image and summary field to the
@@ -15,10 +12,13 @@ class featuredimage extends Plugin
   public function configure()
   {
     $ui = new FormUI( strtolower( get_class( $this ) ) );
-    $ui->append( 'text', 'noimgurl', 'featuredimage__noimgurl', _t('Empty image URL:', 'plugin_locale') );
-    $ui->append( 'text', 'width', 'featuredimage__width', _t('Image width (default 150):', 'plugin_locale') );
-    $ui->append( 'text', 'summarylength', 'featuredimage__summarylength', _t('Summary length (default 300 chars):', 'plugin_locale') );
-    $ui->append('submit', 'save', _t('Save', 'plugin_locale'));
+
+    $general_fieldset = $ui->append('fieldset', 'general_settings', _t('Settings', 'twitter'));
+    $general_fieldset->append( 'text', 'noimgurl', 'featuredimage__noimgurl', _t('Empty image URL:', 'plugin_locale') );
+    $general_fieldset->append( 'text', 'width', 'featuredimage__width', _t('Image width (default 150):', 'plugin_locale') );
+    $general_fieldset->append( 'text', 'height', 'featuredimage__height', _t('Image height (default 150):', 'plugin_locale') );
+    $general_fieldset->append( 'text', 'summarylength', 'featuredimage__summarylength', _t('Summary length (default 300 chars):', 'plugin_locale') );
+    $general_fieldset->append('submit', 'save', _t('Save', 'plugin_locale'));
     return $ui;
   }
 
@@ -27,18 +27,12 @@ class featuredimage extends Plugin
    */
   public function action_form_publish($form, $post, $context)
   {
-    if ($form->content_type->value == Post::type('entry')) {
-      $form->insert('tags', 'text', 'summary', 'null:null',
-                    _t('Please enter the summary'), 'admincontrol_textArea');
-      $form->summary->value = $post->info->summary;
-      $form->summary->template = 'admincontrol_textarea';
-
-      $form->insert('summary', 'text', 'featuredimage', 'null:null',
-                    _t('The url of the featured image (free text allows the use ' .
-                       'of images from anywhere).'), 'admincontrol_textArea');
-      $form->featuredimage->value = $post->info->featuredimage;
-      $form->featuredimage->template = 'admincontrol_text';
-    }
+    $form->insert('tags', 'text', 'featuredimage_summary', 'null:null', _t('Please enter the summary'), 'admincontrol_textArea');
+    $form->featuredimage_summary->value = $post->info->featuredimage_summary;
+    $form->featuredimage_summary->template = 'admincontrol_textarea';
+    $form->insert('featuredimage_summary', 'text', 'featuredimage_image', 'null:null', _t('The url of the featured image'), 'admincontrol_textArea');
+    $form->featuredimage_image->value = $post->info->featuredimage_image;
+    $form->featuredimage_image->template = 'admincontrol_text';
   }
 
   /**
@@ -46,39 +40,41 @@ class featuredimage extends Plugin
    */
   public function action_publish_post( $post, $form )
   {
-    if ($post->content_type == Post::type('entry')) {
-      $post->info->featuredimage = $form->featuredimage->value;
-      $post->info->summary = $form->summary->value;
-    }
+    $post->info->featuredimage_image = $form->featuredimage_image->value;
+    $post->info->featuredimage_summary = $form->featuredimage_summary->value;
   }
 
   /**
-   * Make the featuredimage field available through the post class.
+   * Make featuredimage_image available through $post.
    */
-  public function filter_post_featuredimage($featuredimage, $post) {
+  public function filter_post_featuredimage_image($featuredimage_image, $post)
+  {
     if ($post->content_type == Post::type('entry')) {
-      if (isset($post->info->featuredimage)) {
-        return $post->info->featuredimage;
+      if (!empty($post->info->featuredimage_image)) {
+        return $post->info->featuredimage_image;
       }
 
       preg_match_all('/<img.+src=[\'"]([^\'"]+)[\'"].*>/i', $post->content, $matches);
-      $img = $matches [1] [0];
 
-      if (empty($img)) { //Defines a default image
+      if (sizeof($matches[1]) > 0) {
+        $img = $matches [1] [0];
+      } else {
         $img = Options::get( 'featuredimage__noimgurl' );
       }
+
       return $img;
     }
-    return $featuredimage;
+    return $featuredimage_image;
   }
 
   /**
-   * Make the summary field available through the post class.
+   * Make featuredimage_summary available through $post.
    */
-  public function filter_post_summary($summary, $post) {
+  public function filter_post_featuredimage_summary($featuredimage_summary, $post)
+  {
     if ($post->content_type == Post::type('entry')) {
-      if (!empty($post->info->summary)) {
-        return $post->info->summary;
+      if (!empty($post->info->featuredimage_summary)) {
+        return $post->info->featuredimage_summary;
       }
 
       $maxSumLen = Options::get( 'featuredimage__summarylength', 300);
@@ -93,14 +89,23 @@ class featuredimage extends Plugin
 
       return $trimmedContent . '&hellip;';
     }
-    return $summary;
+    return $featuredimage_summary;
   }
 
   /**
-   * Make featuredimage__width available through $post.
+   * Make featuredimage_width available through $post.
    */
-  public function filter_post_featuredimage__width($width, $post) {
+  public function filter_post_featuredimage_width($featuredimage_width, $post)
+  {
     return Options::get('featuredimage__width', 150);
+  }
+
+  /**
+   * Make featuredimage_height available through $post.
+   */
+  public function filter_post_featuredimage_height($featuredimage_height, $post)
+  {
+    return Options::get('featuredimage__height', 150);
   }
 
   public function action_admin_header($theme)
